@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Digest</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>YouTube Digest</h1>
+      <p class="subtitle">내 시청 기록 한눈에 보기</p>
+    </header>
+
+    <!-- 주간 요약 -->
+    <section id="weekly-summary" class="card">
+      <h2>이번 주 요약</h2>
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-value" id="total-videos">-</span>
+          <span class="stat-label">영상</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="watch-time">-</span>
+          <span class="stat-label">시청 시간</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="completion-rate">-</span>
+          <span class="stat-label">완료율</span>
+        </div>
+      </div>
+      <div id="insights" class="insights"></div>
+    </section>
+
+    <!-- 탭 네비게이션 -->
+    <nav class="tabs">
+      <button class="tab active" data-view="timeline">타임라인</button>
+      <button class="tab" data-view="category">카테고리</button>
+    </nav>
+
+    <!-- 타임라인 뷰 -->
+    <section id="timeline-view" class="view active">
+      <!-- 캘린더 -->
+      <div class="calendar-container card">
+        <div class="calendar-header">
+          <button class="calendar-nav" id="prev-month">&lt;</button>
+          <span id="calendar-month">2026년 4월</span>
+          <button class="calendar-nav" id="next-month">&gt;</button>
+        </div>
+        <div class="calendar-weekdays">
+          <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+        </div>
+        <div id="calendar-days" class="calendar-days"></div>
+        <div class="calendar-actions">
+          <button id="show-all-dates" class="btn-secondary">전체 보기</button>
+        </div>
+      </div>
+
+      <div id="selected-date-info" class="selected-date-info"></div>
+      <div id="timeline-content"></div>
+    </section>
+
+    <!-- 카테고리 뷰 -->
+    <section id="category-view" class="view">
+      <div id="category-content"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

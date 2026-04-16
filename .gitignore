@@ -3,8 +3,14 @@ client_secret.json
 token.json
 *.pickle
 
-# Data (optional - might want to track some)
-data/raw/
+# Data (개인 시청 기록)
+data/*
+!data/.gitkeep
+!data/index.json.example
+
+# Claude Code (개인 메모리)
+.claude/memory/
+.claude/settings.local.json
 
 # Python
 __pycache__/

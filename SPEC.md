@@ -69,10 +69,11 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 
 ### 데이터 수집 방식 (2가지)
 
-#### 방식 1: Google Takeout (전체 기록용)
+#### 방식 1: Google Takeout (참고용 - 실사용 안 함)
 
-- **용도**: 최초 1회, 전체 시청 기록 백업
-- **단점**: 시간 오래 걸림 (몇 시간 ~ 며칠), 날짜 필터 없음
+- **용도**: 전체 시청 기록 백업 (필요시)
+- **단점**: 시간 오래 걸림 (몇 시간 ~ 며칠), 날짜 필터 없음, 실시간 불가
+- **상태**: 테스트만 완료, 실제 구현에서는 방식 2 사용
 
 ```javascript
 // Takeout 자동화 스크립트 (테스트 완료: 2026-04-16)
@@ -88,12 +89,44 @@ await page.getByRole("button", { name: "내보내기 생성" }).click();
 // → 완료되면 이메일로 다운로드 링크 전송됨
 ```
 
-#### 방식 2: YouTube 히스토리 페이지 스크래핑 (주간 업데이트용)
+#### 방식 2: 히스토리 + My Activity 병합 스크래핑 (실제 사용) ✅
 
-- **URL**: https://www.youtube.com/feed/history
-- **용도**: 주간 업데이트, 최근 시청 기록만 가져오기
-- **장점**: 실시간, 날짜별 구분됨
-- **TODO**: 다음 세션에서 구현 필요
+두 데이터 소스를 병합하여 완전한 시청 기록 구성:
+
+| 소스 | URL | 제공 데이터 |
+|------|-----|-------------|
+| **히스토리** (원본) | youtube.com/feed/history | 제목, 채널, 영상길이, 진행률 |
+| **My Activity** (보조) | myactivity.google.com/product/youtube | 정확한 시청 시각 |
+
+- **스크립트**: `src/scrape-history.js`
+- **테스트 완료**: 2026-04-16 (197개 영상, 114개 시간 매칭)
+
+```bash
+# 실행 방법
+npx playwriter session new  # 세션 생성 (Chrome 확장 필요)
+npx playwriter -s <session> -e "$(cat src/scrape-history.js)" --timeout 180000
+```
+
+**최종 데이터 형식:**
+```json
+{
+  "date": "2026-04-16",
+  "time": "08:01",            // My Activity에서 병합 (없으면 null)
+  "title": "영상 제목",
+  "url": "https://youtube.com/watch?v=...",
+  "channel": "채널명",
+  "videoId": "XXX",
+  "isShort": false,
+  "duration": "25:31",        // 영상 전체 길이
+  "progressPercent": 23,      // 시청 진행률 (%)
+  "lastPositionSec": 355      // 마지막 재생 위치 (초)
+}
+```
+
+**주의사항:**
+- YouTube UI가 두 가지 컴포넌트 사용: `yt-lockup-view-model` (새 UI), `ytd-video-renderer` (기존 UI)
+- My Activity에서 광고는 자동 필터링
+- My Activity는 "일부 활동이 표시되지 않을 수 있음" → 시간 매칭률 ~60%
 
 ### 배포
 
@@ -104,17 +137,19 @@ await page.getByRole("button", { name: "내보내기 생성" }).click();
 ### 데이터 흐름
 
 ```
-[Playwriter] → Google Takeout 자동화
+[1. 히스토리 스크래핑] → youtube.com/feed/history
+        ↓                 (제목, 채널, 진행률, 영상길이)
+[2. My Activity 스크래핑] → myactivity.google.com
+        ↓                   (정확한 시청 시각)
+[3. 데이터 병합] → videoId + date로 매칭
         ↓
-[다운로드] → Takeout ZIP → watch-history.json 추출
+[4. 저장] → /data/history-YYYY-MM-DD.json
         ↓
-[Claude 분석] → 카테고리 분류, 요약 생성
+[5. Claude 분석] → 카테고리 분류
         ↓
-[데이터 저장] → /data/videos.json, /data/weekly/YYYY-WW.json
+[6. HTML 대시보드] → 정적 HTML이 JSON 읽어서 렌더링
         ↓
-[HTML 대시보드] → 정적 HTML이 JSON 읽어서 렌더링
-        ↓
-[주간 이메일] → 대시보드 링크 발송
+[7. 주간 이메일] → 대시보드 링크 발송
 ```
 
 ### Google Takeout watch-history.json 형식
@@ -136,12 +171,15 @@ await page.getByRole("button", { name: "내보내기 생성" }).click();
 
 | 필드 | 출처 | 설명 |
 |------|------|------|
-| 시청 일시 | Takeout JSON | `time` 필드 |
-| 영상 제목 | Takeout JSON | `title` 필드 ("Watched ..." 형태) |
-| 영상 URL | Takeout JSON | `titleUrl` 필드 |
-| 채널 정보 | Takeout JSON | `subtitles` 필드 |
-| 카테고리 | LLM 분류 | 제목 기반으로 분류 |
-| 요약 (optional) | LLM 생성 | 영상 내용 요약 |
+| 시청 날짜 | 히스토리 페이지 | 날짜별 섹션 헤더 |
+| 시청 시각 | My Activity | "오전 8:01" → "08:01" 변환 |
+| 영상 제목 | 히스토리 페이지 | h3 요소에서 추출 |
+| 영상 URL | 히스토리 페이지 | videoId 포함 |
+| 채널명 | 히스토리 페이지 | 메타데이터 영역 |
+| 영상 길이 | 히스토리 페이지 | 썸네일 배지 (25:31) |
+| 진행률 | 히스토리 페이지 | 진행률 바 width (23%) |
+| 마지막 위치 | URL 파라미터 | t=355s → 355초 |
+| 카테고리 | LLM 분류 | 제목 기반으로 분류 (TODO) |
 
 ## 제약사항
 
