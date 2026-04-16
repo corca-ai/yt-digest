@@ -6,11 +6,12 @@
  *   2. myactivity.google.com - 보조 (정확한 시각)
  *
  * 사용법:
- *   npx playwriter session new
- *   npx playwriter -s <session> -e "$(cat src/scrape-history.js)" --timeout 180000
+ *   npm run yt:doctor
+ *   PLAYWRITER_SESSION=<session> npm run yt:scrape
  */
 
 const fs = require('fs');
+const path = require('path');
 
 // 상대적 날짜를 절대 날짜로 변환
 function parseRelativeDate(dateStr) {
@@ -56,7 +57,10 @@ function parseRelativeDate(dateStr) {
 }
 
 function formatDate(date) {
-  return date.toISOString().split('T')[0];
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function extractVideoId(url) {
@@ -302,8 +306,9 @@ const historyVideos = await scrapeHistoryPage(5);
 const activityData = await scrapeMyActivity(5);
 const mergedData = mergeData(historyVideos, activityData);
 
-// 저장 (playwriter는 프로젝트 루트에서 실행된다고 가정)
-const filename = `data/history-${formatDate(new Date())}.json`;
+// 저장
+const filename = process.env.YT_DIGEST_OUTPUT || `data/history/history-${formatDate(new Date())}.json`;
+fs.mkdirSync(path.dirname(filename), { recursive: true });
 fs.writeFileSync(filename, JSON.stringify(mergedData, null, 2));
 console.log(`\nSaved to ${filename}`);
 

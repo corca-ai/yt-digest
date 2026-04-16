@@ -35,6 +35,13 @@ async function loadData() {
     const indexRes = await fetch('../data/index.json');
     const index = await indexRes.json();
 
+    if (!index.latestHistory) {
+      console.log('아직 생성된 시청 기록이 없습니다. `npm run yt` 또는 `npm run yt:scrape` 후 다시 확인하세요.');
+      historyData = [];
+      weeklyData = null;
+      return;
+    }
+
     const historyRes = await fetch(`../data/${index.latestHistory}`);
     historyData = await historyRes.json();
 
@@ -232,6 +239,7 @@ function formatDate(dateStr) {
 function renderVideoItem(video) {
   const thumbnailUrl = `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`;
   const progress = video.progressPercent || 0;
+  const category = video.category || '기타';
 
   return `
     <div class="video-item">
@@ -248,7 +256,7 @@ function renderVideoItem(video) {
           ${video.time ? `<span class="time">${video.time}</span>` : ''}
           <span class="channel">${escapeHtml(video.channel || '')}</span>
         </div>
-        <span class="category-tag ${video.category}">${video.category}</span>
+        <span class="category-tag ${category}">${category}</span>
         ${progress > 0 && progress < 100 ? `<span class="progress-text" style="margin-left:8px;font-size:0.75rem;color:#999">${progress}% 시청</span>` : ''}
       </div>
     </div>

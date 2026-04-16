@@ -19,31 +19,48 @@ YouTube 시청 기록 수집 및 분석.
 /yt digest    # 주간 인사이트 생성
 ```
 
+스킬 원본은 `.agents/skills/yt/SKILL.md`에 있고, `.claude/skills/yt`는 그 파일을 가리키는 심링크다.
+
 ## 프로젝트 구조
 
 ```
 youtube-digest/
-├── src/
-│   └── scrape-history.js    # playwriter 스크래핑 스크립트
+├── .agents/
+│   └── skills/
+│       └── yt/
+│           ├── SKILL.md
+│           ├── assets/
+│           └── references/
+├── scripts/
+│   ├── yt-scrape.mjs              # playwriter 실행 래퍼
+│   ├── yt-enrich.mjs              # 카테고리/요약 보강
+│   ├── yt-digest.mjs              # 주간 인사이트 생성
+│   ├── yt-doctor.mjs              # 로컬 환경 점검
+│   └── playwriter/
+│       └── collect-watch-history.js
 ├── data/
-│   ├── history-YYYY-MM-DD.json  # 일별 시청 기록
-│   └── weekly-YYYY-WNN.json     # 주간 인사이트
-├── dashboard/                   # 정적 대시보드 (TODO)
-├── SPEC.md                      # 상세 스펙
-├── AGENTS.md                    # 이 파일
-└── CLAUDE.md                    # AGENTS.md 심링크
+│   ├── history/                   # 일별 시청 기록
+│   ├── weekly/                    # 주간 인사이트
+│   └── index.json                 # 최신 파일 인덱스 (생성물)
+├── dashboard/                     # 정적 대시보드
+├── docs/
+│   ├── spec.md                    # 상세 스펙
+│   └── discovery/
+├── AGENTS.md
+└── CLAUDE.md                      # AGENTS.md 심링크
 ```
 
 ## 데이터 흐름
 
-1. **scrape**: playwriter로 YouTube 히스토리 + My Activity 스크래핑
-2. **enrich**: LLM이 카테고리 분류, 1줄 요약 생성
-3. **digest**: 여러 영상 기반 주간 인사이트 생성
-4. **dashboard**: JSON 읽어서 시각화 (별도)
+1. **scrape**: Playwriter로 YouTube 히스토리 + My Activity 스크래핑
+2. **enrich**: 영상별 카테고리와 한 줄 요약 추가
+3. **digest**: 시청 시간, 카테고리 분포, 주간 인사이트 생성
+4. **dashboard**: `data/index.json` 기준으로 최신 결과 시각화
 
 ## 의존성
 
-- playwriter (npm 전역 설치)
+- Node.js 18+
+- `npm install`
 - Chrome + Playwriter 확장 프로그램
 - Google 계정 로그인 상태
 

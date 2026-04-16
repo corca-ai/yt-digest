@@ -4,9 +4,11 @@ token.json
 *.pickle
 
 # Data (개인 시청 기록)
-data/*
-!data/.gitkeep
-!data/index.json.example
+data/**
+!data/history/
+!data/history/.gitkeep
+!data/weekly/
+!data/weekly/.gitkeep
 
 # Claude Code (개인 메모리)
 .claude/memory/
@@ -28,3 +30,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Node
+node_modules/

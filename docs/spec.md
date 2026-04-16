@@ -98,13 +98,15 @@ await page.getByRole("button", { name: "내보내기 생성" }).click();
 | **히스토리** (원본) | youtube.com/feed/history | 제목, 채널, 영상길이, 진행률 |
 | **My Activity** (보조) | myactivity.google.com/product/youtube | 정확한 시청 시각 |
 
-- **스크립트**: `src/scrape-history.js`
+- **스크립트**: `scripts/playwriter/collect-watch-history.js`
 - **테스트 완료**: 2026-04-16 (197개 영상, 114개 시간 매칭)
 
 ```bash
 # 실행 방법
-npx playwriter session new  # 세션 생성 (Chrome 확장 필요)
-npx playwriter -s <session> -e "$(cat src/scrape-history.js)" --timeout 180000
+npm install
+npm run yt:doctor
+npx playwriter session new
+PLAYWRITER_SESSION=<session> npm run yt:scrape
 ```
 
 **최종 데이터 형식:**
@@ -143,7 +145,7 @@ npx playwriter -s <session> -e "$(cat src/scrape-history.js)" --timeout 180000
         ↓                   (정확한 시청 시각)
 [3. 데이터 병합] → videoId + date로 매칭
         ↓
-[4. 저장] → /data/history-YYYY-MM-DD.json
+[4. 저장] → /data/history/history-YYYY-MM-DD.json
         ↓
 [5. Claude 분석] → 카테고리 분류
         ↓
@@ -227,22 +229,26 @@ npx playwriter -s <session> -e "$(cat src/scrape-history.js)" --timeout 180000
 youtube-digest/
 ├── client_secret.json      # OAuth 인증 정보 (gitignore)
 ├── token.json              # 저장된 토큰 (gitignore)
-├── SPEC.md                 # 이 문서
-├── src/
-│   ├── auth.py             # Google OAuth 인증
-│   ├── fetch.py            # Data Portability API 호출
-│   ├── analyze.py          # 데이터 분석 (스킬용)
-│   └── email.py            # 이메일 발송
+├── docs/
+│   └── spec.md             # 이 문서
+├── scripts/
+│   ├── yt-scrape.mjs       # 스크래핑 래퍼
+│   ├── yt-enrich.mjs       # 분류/요약 보강
+│   ├── yt-digest.mjs       # 주간 인사이트 생성
+│   └── playwriter/
+│       └── collect-watch-history.js
 ├── data/
-│   ├── raw/                # API에서 받은 원본 데이터
-│   ├── videos.json         # 가공된 영상 데이터
-│   └── weekly/             # 주간 리포트 데이터
+│   ├── history/            # 스크래핑 결과
+│   ├── weekly/             # 주간 리포트 데이터
+│   └── index.json          # 최신 파일 포인터
 ├── dashboard/
 │   ├── index.html
 │   ├── style.css
 │   └── app.js
-└── skills/
-    └── youtube-digest.md   # Claude Code 스킬 정의
+└── .agents/
+    └── skills/
+        └── yt/
+            └── SKILL.md    # Claude/Codex 공용 스킬 정의
 ```
 
 ## 참고 자료
@@ -253,4 +259,4 @@ youtube-digest/
 
 ---
 
-**다음 세션에서 "SPEC.md 보고 구현해줘" 하면 됨**
+**다음 세션에서 "docs/spec.md 보고 구현해줘" 하면 됨**

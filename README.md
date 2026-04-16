@@ -1,113 +1,80 @@
 # yt-digest
 
-개인 YouTube 시청 기록을 수집하고 분석하여 인사이트를 제공합니다.
+개인 YouTube 시청 기록을 수집하고 분석해 인사이트와 대시보드로 정리하는 로컬 리포다.
 
 ## 주요 기능
 
-- YouTube 시청 기록 자동 스크래핑 (시청 시간, 진행률 포함)
-- 카테고리 자동 분류 및 요약
-- 주간 인사이트 생성
-- 대시보드로 시각화
-
-## 요구사항
-
-- Node.js 18+
-- [playwriter](https://github.com/nicobao/playwriter) (Chrome 확장 프로그램)
-- Claude Code (enrich/digest 단계)
+- YouTube 히스토리 + My Activity 병합 스크래핑
+- 제목/채널 기반 카테고리 분류 및 한 줄 요약 보강
+- 주간 인사이트 JSON 생성
+- 정적 대시보드로 최신 결과 시각화
 
 ## 설치
 
 ```bash
-# 저장소 클론
 git clone https://github.com/corca-ai/yt-digest.git
 cd yt-digest
-
-# playwriter 설치
-npm install -g playwriter
-
-# data 폴더 생성
-mkdir -p data
+npm install
 ```
 
-## 사용법
+추가로 필요한 것:
 
-### 1. 시청 기록 스크래핑
+- Node.js 18+
+- Chrome
+- [Playwriter Chrome 확장](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkfahahnfhe)
+- Google 계정 로그인 세션
+
+## 빠른 시작
 
 ```bash
-# playwriter 세션 생성 (최초 1회, Chrome 로그인 필요)
+npm run yt:doctor
 npx playwriter session new
-
-# 스크래핑 실행
-npx playwriter -s <session-name> -e "$(cat src/scrape-history.js)" --timeout 180000
+PLAYWRITER_SESSION=<session-name> npm run yt
 ```
 
-결과: `data/history-YYYY-MM-DD.json`
-
-### 2. 대시보드 보기
+개별 단계 실행:
 
 ```bash
-# 인덱스 파일 생성
-echo '{"latestHistory": "history-YYYY-MM-DD.json"}' > data/index.json
-
-# 로컬 서버 실행
-npx serve .
-# 또는
-python3 -m http.server 8000
+npm run yt:scrape
+npm run yt:enrich
+npm run yt:digest
+npm run dashboard
 ```
 
-브라우저에서 `http://localhost:8000/dashboard/` 접속
+대시보드는 `http://localhost:3000/dashboard/`에서 확인할 수 있다.
 
-### 3. Claude Code로 분석 (선택)
+## 데이터 위치
 
-Claude Code에서 `/yt` 명령어 사용:
+- 시청 기록: `data/history/history-YYYY-MM-DD.json`
+- 주간 인사이트: `data/weekly/weekly-YYYY-WNN.json`
+- 최신 포인터: `data/index.json`
 
-```
-/yt           # 전체 실행 (scrape → enrich → digest)
-/yt scrape    # 시청 기록 스크래핑
-/yt enrich    # 카테고리/요약 추가
-/yt digest    # 주간 인사이트 생성
-```
+`data/index.json`은 스크립트가 자동 갱신한다. 대시보드는 이 파일을 기준으로 최신 데이터를 읽는다.
+
+## 스킬 구조
+
+- canonical skill: `.agents/skills/yt/SKILL.md`
+- Claude 연결점: `.claude/skills/yt`
+
+스킬도 동일한 `npm run yt:*` 진입점을 사용한다.
 
 ## 프로젝트 구조
 
-```
+```text
 yt-digest/
-├── src/
-│   └── scrape-history.js    # 스크래핑 스크립트
-├── data/                    # 시청 기록 (gitignore)
-│   ├── index.json           # 최신 파일 인덱스
-│   ├── history-YYYY-MM-DD.json
-│   └── weekly-YYYY-WNN.json
-├── dashboard/               # 정적 대시보드
-│   ├── index.html
-│   ├── style.css
-│   └── app.js
-└── .claude/skills/          # Claude Code 스킬
+├── .agents/skills/yt/         # 스킬 정의, 참고 문서, 템플릿
+├── scripts/                   # npm run 진입점과 Playwriter 스크립트
+├── data/
+│   ├── history/
+│   └── weekly/
+├── dashboard/                 # 정적 뷰어
+├── docs/
+│   ├── spec.md
+│   └── discovery/
+└── AGENTS.md
 ```
 
-## 데이터 형식
-
-### history-YYYY-MM-DD.json
-
-```json
-[
-  {
-    "date": "2026-04-16",
-    "time": "08:01",
-    "title": "영상 제목",
-    "url": "https://www.youtube.com/watch?v=...",
-    "channel": "채널명",
-    "videoId": "...",
-    "isShort": false,
-    "duration": "25:31",
-    "progressPercent": 100,
-    "category": "기술/개발",
-    "summary": "영상 요약"
-  }
-]
-```
-
-### 카테고리
+## 카테고리
 
 - 기술/개발
 - 비즈니스/경제
