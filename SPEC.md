@@ -33,20 +33,39 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 
 ## 기술 구현
 
-### 아키텍처
+### 중요: Data Portability API 사용 불가
+
+> **2026-04-16 테스트 결과**: Data Portability API는 한국에서 사용할 수 없음.
+> "거주 중인 국가에서 사용할 수 없는 기능입니다" 오류 발생.
+> 
+> **대안**: Google Takeout + Playwriter 자동화
+
+### 아키텍처 (수정됨)
 
 ```
 /youtube-digest (Claude Code 스킬 실행)
     │
-    ├─ 1. Google Data Portability API로 YouTube 시청 기록 가져오기
-    │      └─ Scope: dataportability.myactivity.youtube
+    ├─ 1. Playwriter로 Google Takeout 자동화
+    │      ├─ takeout.google.com 접속 (로그인 세션 재사용)
+    │      ├─ YouTube 시청 기록만 선택
+    │      ├─ JSON 형식으로 내보내기 요청
+    │      └─ 다운로드 완료 대기 & 파일 이동
     │
-    ├─ 2. Claude가 영상 분석/카테고리 분류 (API 비용 없이 스킬로 처리)
+    ├─ 2. watch-history.json 파싱
     │
-    ├─ 3. JSON 파일로 데이터 저장
+    ├─ 3. Claude가 영상 분석/카테고리 분류 (API 비용 없이 스킬로 처리)
     │
-    └─ 4. HTML 대시보드가 JSON 읽어서 렌더링
+    ├─ 4. JSON 파일로 데이터 저장
+    │
+    └─ 5. HTML 대시보드가 JSON 읽어서 렌더링
 ```
+
+### Playwriter 설정
+
+- **Playwriter**: `npm i -g playwriter`
+- **Chrome 확장**: [Playwriter Extension](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkfahahnfhe)
+- **세션 유지**: `storageState`로 Google 로그인 세션 재사용
+- **주의**: Google 봇 감지 가능 → `playwright-stealth` 사용 권장
 
 ### 배포
 
@@ -57,7 +76,9 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 ### 데이터 흐름
 
 ```
-[Data Portability API] → watch history JSON
+[Playwriter] → Google Takeout 자동화
+        ↓
+[다운로드] → Takeout ZIP → watch-history.json 추출
         ↓
 [Claude 분석] → 카테고리 분류, 요약 생성
         ↓
@@ -68,15 +89,30 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 [주간 이메일] → 대시보드 링크 발송
 ```
 
+### Google Takeout watch-history.json 형식
+
+```json
+[
+  {
+    "header": "YouTube",
+    "title": "Watched 영상 제목",
+    "titleUrl": "https://www.youtube.com/watch?v=...",
+    "subtitles": [{"name": "채널명", "url": "..."}],
+    "time": "2026-04-15T10:30:00.000Z",
+    "products": ["YouTube"]
+  }
+]
+```
+
 ### 필수 데이터
 
 | 필드 | 출처 | 설명 |
 |------|------|------|
-| 시청 일시 | Data Portability API | `time` 필드 |
-| 영상 제목 | Data Portability API | `title` 필드 ("Watched ..." 형태) |
-| 영상 URL | Data Portability API | `titleUrl` 필드 |
-| 채널 정보 | Data Portability API | `subtitles` 필드 |
-| 카테고리 | LLM 분류 | 제목/설명 기반으로 분류 |
+| 시청 일시 | Takeout JSON | `time` 필드 |
+| 영상 제목 | Takeout JSON | `title` 필드 ("Watched ..." 형태) |
+| 영상 URL | Takeout JSON | `titleUrl` 필드 |
+| 채널 정보 | Takeout JSON | `subtitles` 필드 |
+| 카테고리 | LLM 분류 | 제목 기반으로 분류 |
 | 요약 (optional) | LLM 생성 | 영상 내용 요약 |
 
 ## 제약사항
@@ -85,7 +121,9 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 - 모든 영상 정보를 가져와야 함 (필터링 X, 전체 O)
 - 부끄럽거나 의미없는 영상도 포함 → 솔직한 회고 가능
 
-## Google Cloud 설정 (완료)
+## Google Cloud 설정 (참고용 - 사용 불가)
+
+> Data Portability API는 한국에서 사용 불가. 아래 설정은 참고용.
 
 - **프로젝트**: openclaw-project (ninth-botany-490702-a7)
 - **API**: Data Portability API 활성화됨
@@ -95,11 +133,11 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 
 ## 구현 순서
 
-### Phase 1: 데이터 수집
+### Phase 1: 데이터 수집 (Playwriter + Takeout)
 
-1. Data Portability API 인증 플로우 구현
-2. YouTube 시청 기록 가져오기
-3. 데이터 파싱 및 저장
+1. Playwriter로 Google Takeout 자동화 스크립트 구현
+2. YouTube 시청 기록 JSON 다운로드 자동화
+3. watch-history.json 파싱 및 저장
 
 ### Phase 2: 데이터 분석
 
