@@ -63,7 +63,7 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 ### Playwriter 설정
 
 - **Playwriter**: `npm i -g playwriter`
-- **Chrome 확장**: [Playwriter Extension](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkfahahnfhe)
+- **Chrome 확장**: [Playwriter Extension](https://chromewebstore.google.com/detail/playwriter/jfeammnjpkecdekppnclgkkffahnhfhe)
 - **세션 유지**: `storageState`로 Google 로그인 세션 재사용
 - **주의**: Google 봇 감지 가능 → `playwright-stealth` 사용 권장
 

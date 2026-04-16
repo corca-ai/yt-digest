@@ -54,7 +54,7 @@ npm run yt:doctor
 
 Playwriter Chrome 확장이 필요하면 이 링크를 사용자에게 안내하세요.
 
-- https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkfahahnfhe
+- https://chromewebstore.google.com/detail/playwriter/jfeammnjpkecdekppnclgkkffahnhfhe
 
 ## 사용자에게 요청해도 되는 최소 개입
 

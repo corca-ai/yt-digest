@@ -31,7 +31,7 @@ npm install
 
 - Node.js 18+
 - Chrome
-- [Playwriter Chrome 확장](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkfahahnfhe)
+- [Playwriter Chrome 확장](https://chromewebstore.google.com/detail/playwriter/jfeammnjpkecdekppnclgkkffahnhfhe)
 - Google 계정 로그인 세션
 
 ## 빠른 시작
