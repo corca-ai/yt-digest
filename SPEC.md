@@ -67,6 +67,34 @@ YouTube 기본 카테고리가 아닌, **LLM이 세밀하게 분류** (경제지
 - **세션 유지**: `storageState`로 Google 로그인 세션 재사용
 - **주의**: Google 봇 감지 가능 → `playwright-stealth` 사용 권장
 
+### 데이터 수집 방식 (2가지)
+
+#### 방식 1: Google Takeout (전체 기록용)
+
+- **용도**: 최초 1회, 전체 시청 기록 백업
+- **단점**: 시간 오래 걸림 (몇 시간 ~ 며칠), 날짜 필터 없음
+
+```javascript
+// Takeout 자동화 스크립트 (테스트 완료: 2026-04-16)
+await page.goto("https://takeout.google.com");
+await page.getByRole("button", { name: "모두 선택 해제" }).click();
+await page.getByRole("checkbox", { name: "YouTube 및 YouTube Music 선택" }).click();
+await page.getByRole("button", { name: /YouTube.*형식/ }).click();
+await page.getByRole("combobox", { name: "기록" }).click();
+await page.getByRole("option", { name: "JSON" }).click();
+await page.keyboard.press("Escape");
+await page.getByRole("button", { name: "다음 단계" }).click();
+await page.getByRole("button", { name: "내보내기 생성" }).click();
+// → 완료되면 이메일로 다운로드 링크 전송됨
+```
+
+#### 방식 2: YouTube 히스토리 페이지 스크래핑 (주간 업데이트용)
+
+- **URL**: https://www.youtube.com/feed/history
+- **용도**: 주간 업데이트, 최근 시청 기록만 가져오기
+- **장점**: 실시간, 날짜별 구분됨
+- **TODO**: 다음 세션에서 구현 필요
+
 ### 배포
 
 - **Localhost만**: 항상 컴퓨터에 띄워둔다고 가정
