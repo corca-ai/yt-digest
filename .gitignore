@@ -1,0 +1,24 @@
+# Secrets
+client_secret.json
+token.json
+*.pickle
+
+# Data (optional - might want to track some)
+data/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
