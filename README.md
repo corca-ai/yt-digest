@@ -2,6 +2,16 @@
 
 개인 YouTube 시청 기록을 수집하고 분석해 인사이트와 대시보드로 정리하는 로컬 리포지토리입니다.
 
+## 퀵스타트
+
+아래 프롬프트를 복사해 코딩 에이전트에게 붙여넣으세요.
+
+```text
+https://github.com/corca-ai/yt-digest/blob/main/INSTALL.md 이 문서를 읽고 내용대로 끝까지 진행해줘.
+```
+
+에이전트용 실행 문서는 [INSTALL.md](./INSTALL.md)에서 직접 확인하실 수 있습니다.
+
 ## 주요 기능
 
 - YouTube 히스토리 + My Activity 병합 스크래핑
