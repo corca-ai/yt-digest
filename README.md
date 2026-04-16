@@ -1,6 +1,6 @@
 # yt-digest
 
-개인 YouTube 시청 기록을 수집하고 분석해 인사이트와 대시보드로 정리하는 로컬 리포다.
+개인 YouTube 시청 기록을 수집하고 분석해 인사이트와 대시보드로 정리하는 로컬 리포지토리입니다.
 
 ## 주요 기능
 
@@ -17,7 +17,7 @@ cd yt-digest
 npm install
 ```
 
-추가로 필요한 것:
+추가로 필요한 항목은 다음과 같습니다.
 
 - Node.js 18+
 - Chrome
@@ -32,7 +32,7 @@ npx playwriter session new
 PLAYWRITER_SESSION=<session-name> npm run yt
 ```
 
-개별 단계 실행:
+개별 단계는 다음과 같이 실행하실 수 있습니다.
 
 ```bash
 npm run yt:scrape
@@ -41,7 +41,7 @@ npm run yt:digest
 npm run dashboard
 ```
 
-대시보드는 `http://localhost:3000/dashboard/`에서 확인할 수 있다.
+대시보드는 `http://localhost:3000/dashboard/`에서 확인하실 수 있습니다.
 
 ## 데이터 위치
 
@@ -49,14 +49,14 @@ npm run dashboard
 - 주간 인사이트: `data/weekly/weekly-YYYY-WNN.json`
 - 최신 포인터: `data/index.json`
 
-`data/index.json`은 스크립트가 자동 갱신한다. 대시보드는 이 파일을 기준으로 최신 데이터를 읽는다.
+`data/index.json`은 스크립트가 자동으로 갱신합니다. 대시보드는 이 파일을 기준으로 최신 데이터를 읽습니다.
 
 ## 스킬 구조
 
 - canonical skill: `.agents/skills/yt/SKILL.md`
 - Claude 연결점: `.claude/skills/yt`
 
-스킬도 동일한 `npm run yt:*` 진입점을 사용한다.
+스킬도 동일한 `npm run yt:*` 진입점을 사용합니다.
 
 ## 프로젝트 구조
 
