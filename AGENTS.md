@@ -19,7 +19,7 @@ YouTube 시청 기록 수집 및 분석.
 /yt digest    # 주간 인사이트 생성
 ```
 
-스킬 원본은 `.agents/skills/yt/SKILL.md`에 있고, `.claude/skills/yt`는 그 파일을 가리키는 심링크다.
+스킬 원본은 `.agents/skills/yt/`에 있고, `.claude/skills/yt`는 그 디렉터리를 가리키는 심링크다. (파일이 아닌 디렉터리 심링크여야 Claude Code 로더가 `SKILL.md`와 `references/`, `assets/`를 함께 인식한다.)
 
 ## 프로젝트 구조
 
