@@ -27,6 +27,8 @@ cd yt-digest
 npm install
 ```
 
+> `npm install` 시 `glob@10.5.0` deprecation 경고가 뜨는데, `playwriter → posthtml-beautify → js-beautify`가 transitive로 묶고 있는 버전입니다. 저자가 v10 이하를 일괄 deprecated 처리한 공지로 `npm audit`에는 잡히지 않고 이 리포 사용 패턴에서는 실효 위험이 없습니다. 업스트림이 glob v11+로 올릴 때까지 무시해도 됩니다.
+
 추가로 필요한 항목은 다음과 같습니다.
 
 - Node.js 18+
