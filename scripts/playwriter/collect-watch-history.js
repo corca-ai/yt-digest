@@ -307,7 +307,8 @@ const activityData = await scrapeMyActivity(5);
 const mergedData = mergeData(historyVideos, activityData);
 
 // 저장
-const filename = process.env.YT_DIGEST_OUTPUT || `data/history/history-${formatDate(new Date())}.json`;
+const envOutput = typeof process !== 'undefined' && process.env ? process.env.YT_DIGEST_OUTPUT : null;
+const filename = envOutput || `data/history/history-${formatDate(new Date())}.json`;
 fs.mkdirSync(path.dirname(filename), { recursive: true });
 fs.writeFileSync(filename, JSON.stringify(mergedData, null, 2));
 console.log(`\nSaved to ${filename}`);
