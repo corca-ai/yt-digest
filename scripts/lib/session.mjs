@@ -5,28 +5,40 @@ import { resolvePlaywriterBin } from './playwriter.mjs';
 function parseSessionCandidates(output) {
   const cleanedLines = output
     .split(/\r?\n/)
-    .map((line) => line.replace(/\x1B\[[0-9;]*m/g, '').trim())
-    .filter(Boolean);
+    .map((line) => line.replace(/\x1B\[[0-9;]*m/g, '').replace(/\s+$/, ''))
+    .filter((line) => line.trim() !== '')
+    .filter((line) => !/^[-=\s]+$/.test(line));
+
+  const looksLikeTable =
+    cleanedLines.length > 0 &&
+    /^\s*ID\b/i.test(cleanedLines[0]) &&
+    /\s{2,}/.test(cleanedLines[0]);
+  const rows = looksLikeTable ? cleanedLines.slice(1) : cleanedLines;
 
   const candidates = new Set();
 
-  for (const line of cleanedLines) {
-    const direct = line.match(/^([A-Za-z0-9._-]+)$/);
-    const bullet = line.match(/^(?:-|\*|\d+\.)\s*([A-Za-z0-9._-]+)$/);
-    const named = line.match(/(?:name|session)[:=]\s*([A-Za-z0-9._-]+)/i);
-
-    if (direct) {
-      candidates.add(direct[1]);
+  for (const line of rows) {
+    const table = line.match(/^\s*([A-Za-z0-9._-]+)\s{2,}/);
+    if (table) {
+      candidates.add(table[1]);
       continue;
     }
 
+    const bullet = line.trim().match(/^(?:-|\*|\d+\.)\s*([A-Za-z0-9._-]+)$/);
     if (bullet) {
       candidates.add(bullet[1]);
       continue;
     }
 
+    const named = line.match(/(?:name|session)[:=]\s*([A-Za-z0-9._-]+)/i);
     if (named) {
       candidates.add(named[1]);
+      continue;
+    }
+
+    const direct = line.trim().match(/^([A-Za-z0-9._-]+)$/);
+    if (direct) {
+      candidates.add(direct[1]);
     }
   }
 
