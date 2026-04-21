@@ -1,4 +1,3 @@
-import { enrichVideos } from './lib/categories.mjs';
 import {
   ensureDataLayout,
   getIsoWeekInfo,
@@ -88,12 +87,7 @@ if (!latestHistoryFile) {
   process.exit(1);
 }
 
-const history = readJson(latestHistoryFile);
-const { videos, changed } = enrichVideos(history);
-
-if (changed > 0) {
-  writeJson(latestHistoryFile, videos);
-}
+const videos = readJson(latestHistoryFile);
 
 const categoryDistribution = {};
 let totalWatchedSeconds = 0;

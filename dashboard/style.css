@@ -222,6 +222,16 @@ header h1 {
   margin-right: 10px;
 }
 
+.video-meta .channel {
+  color: #666;
+  text-decoration: none;
+}
+
+a.channel:hover {
+  color: #1565c0;
+  text-decoration: underline;
+}
+
 .category-tag {
   display: inline-block;
   padding: 2px 8px;

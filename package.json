@@ -7,8 +7,9 @@
     "node": ">=18"
   },
   "scripts": {
-    "yt": "npm run yt:scrape && npm run yt:enrich && npm run yt:digest",
+    "yt": "npm run yt:scrape && npm run yt:enrich && npm run yt:channels && npm run yt:digest",
     "yt:scrape": "node scripts/yt-scrape.mjs",
+    "yt:channels": "node scripts/yt-channels.mjs",
     "yt:enrich": "node scripts/yt-enrich.mjs",
     "yt:digest": "node scripts/yt-digest.mjs",
     "yt:doctor": "node scripts/yt-doctor.mjs",

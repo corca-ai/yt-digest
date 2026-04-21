@@ -71,6 +71,13 @@ function extractVideoId(url) {
   return null;
 }
 
+function deriveChannelId(channelUrl) {
+  if (!channelUrl) return null;
+  const match = channelUrl.match(/youtube\.com(\/(?:@|channel\/|c\/|user\/)[^/?&#]+)/);
+  if (!match) return null;
+  return match[1].replace(/^\//, '').replace(/\//g, '_');
+}
+
 // 한국어 시간을 24시간 형식으로 변환
 function parseKoreanTime(timeStr) {
   if (!timeStr) return null;
@@ -119,6 +126,10 @@ async function scrapeHistoryPage(maxScrolls = 5) {
         els => els.map(el => el.textContent.trim())
       ).catch(() => []);
       const channel = metaSpans.length > 1 ? metaSpans[1] : null;
+      const channelUrl = await lockup.$eval(
+        'yt-lockup-metadata-view-model a[href^="/@"], yt-lockup-metadata-view-model a[href^="/channel/"], yt-lockup-metadata-view-model a[href^="/c/"], yt-lockup-metadata-view-model a[href^="/user/"]',
+        el => el.href
+      ).catch(() => null);
       const duration = await lockup.$eval('.ytBadgeShapeText', el => el.textContent.trim()).catch(() => null);
       const progressPercent = await lockup.$eval(
         '.ytThumbnailOverlayProgressBarHostWatchedProgressBarSegment',
@@ -137,6 +148,8 @@ async function scrapeHistoryPage(maxScrolls = 5) {
           title,
           url: url.split('&')[0], // 파라미터 정리
           channel,
+          channelUrl,
+          channelId: deriveChannelId(channelUrl),
           videoId: extractVideoId(url),
           isShort: url.includes('/shorts/'),
           duration,
@@ -152,6 +165,7 @@ async function scrapeHistoryPage(maxScrolls = 5) {
       const url = await renderer.$eval('#video-title', el => el.href).catch(() => null);
       const title = await renderer.$eval('#video-title', el => el.textContent.trim()).catch(() => null);
       const channel = await renderer.$eval('#channel-name a', el => el.textContent.trim()).catch(() => null);
+      const channelUrl = await renderer.$eval('#channel-name a', el => el.href).catch(() => null);
       const duration = await renderer.$eval(
         'span.ytd-thumbnail-overlay-time-status-renderer',
         el => el.textContent.trim()
@@ -170,6 +184,8 @@ async function scrapeHistoryPage(maxScrolls = 5) {
           title,
           url: url.split('&')[0],
           channel,
+          channelUrl,
+          channelId: deriveChannelId(channelUrl),
           videoId: extractVideoId(url),
           isShort: url.includes('/shorts/'),
           duration,

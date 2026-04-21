@@ -254,7 +254,11 @@ function renderVideoItem(video) {
         </div>
         <div class="video-meta">
           ${video.time ? `<span class="time">${video.time}</span>` : ''}
-          <span class="channel">${escapeHtml(video.channel || '')}</span>
+          ${
+            video.channelUrl
+              ? `<a class="channel" href="${escapeHtml(video.channelUrl)}" target="_blank" rel="noopener">${escapeHtml(video.channel || '')}</a>`
+              : `<span class="channel">${escapeHtml(video.channel || '')}</span>`
+          }
         </div>
         <span class="category-tag ${category}">${category}</span>
         ${progress > 0 && progress < 100 ? `<span class="progress-text" style="margin-left:8px;font-size:0.75rem;color:#999">${progress}% 시청</span>` : ''}
